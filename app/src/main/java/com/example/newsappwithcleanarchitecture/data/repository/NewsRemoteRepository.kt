@@ -22,14 +22,14 @@ class NewsRemoteRepository @Inject constructor(
             val newsList = NewsMapper.mapDtoListToDomainList(response.news)
             emit(ResultState.Success(newsList))
         } catch (e: IOException) {
-            Log.e("NewsRemoteRepository", "Network error fetching news", e)
+            Log.e("NewsRemoteRepository", "No internet", e)
             emit(ResultState.Error("No internet connection"))
         } catch (e: HttpException) {
-            Log.e("NewsRemoteRepository", "API error fetching news", e)
+            Log.e("NewsRemoteRepository", "Server error", e)
             emit(ResultState.Error("Server error: ${e.code()}"))
         } catch (e: Exception) {
-            Log.e("NewsRemoteRepository", "Unexpected error fetching news", e)
-            emit(ResultState.Error(e.localizedMessage ?: "Unknown error occurred"))
+            Log.e("NewsRemoteRepository", "Unknown error", e)
+            emit(ResultState.Error(e.localizedMessage ?: "Unknown error"))
         }
     }
 }

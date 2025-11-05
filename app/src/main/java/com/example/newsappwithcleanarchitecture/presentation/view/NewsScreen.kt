@@ -117,7 +117,7 @@ fun NewsContent(
 
                 uiState.errorMessage != null -> {
                     ErrorScreen(
-                        message =  uiState.errorMessage ?: "Unknown error",
+                        message = uiState.errorMessage,
                     )
                 }
 
