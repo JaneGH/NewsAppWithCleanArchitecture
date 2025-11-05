@@ -23,13 +23,13 @@ data class NewsEntity(
 //    val author: String?,
 
     @SerializedName("image")
-    val image: String? = null
+    val image: String? = null,
 
 //    @SerializedName("language")
 //    val language: String,
 
 //    @SerializedName("category")
-//    val category: List<String>,
+//    val category: List<String>
 
 //    @SerializedName("published")
 //    val published: String

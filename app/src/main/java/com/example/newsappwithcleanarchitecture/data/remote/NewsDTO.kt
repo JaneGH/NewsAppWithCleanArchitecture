@@ -24,8 +24,8 @@ data class NewsDTO (
         @SerializedName("language")
         val language: String,
 
-//    @SerializedName("category")
-//    val category: List<String>,
+//        @SerializedName("category")
+//        val category: List<String>,
 
         @SerializedName("published")
         val published: String
