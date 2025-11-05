@@ -1,5 +1,6 @@
 package com.example.newsappwithcleanarchitecture.presentation.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.newsappwithcleanarchitecture.domain.model.News
@@ -15,7 +16,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import kotlinx.coroutines.flow.first
 
 @HiltViewModel
 class NewsViewModel @Inject constructor(
@@ -54,32 +54,47 @@ class NewsViewModel @Inject constructor(
     private fun loadNews() = viewModelScope.launch {
         _state.value = _state.value.copy(isLoading = true, errorMessage = null)
 
-        val isConnected = networkMonitor.isConnectedFlow().first()
+        networkMonitor.isConnectedFlow().collectLatest {
+            isConnected ->
+            Log.i ("isConnected", "$isConnected")
+            if (isConnected) {
+                fetchAndCacheNewsUseCase().collect { result ->
+                    when (result) {
+                        is ResultState.Loading -> _state.value = _state.value.copy(isLoading = true)
+                        is ResultState.Success -> _state.value =
+                            _state.value.copy(isLoading = false)
 
-        if (isConnected) {
-            fetchAndCacheNewsUseCase().collect { result ->
-                when (result) {
-                    is ResultState.Loading -> _state.value = _state.value.copy(isLoading = true)
-                    is ResultState.Success -> _state.value = _state.value.copy(isLoading = false)
-                    is ResultState.Error -> _state.value = _state.value.copy(
-                        isLoading = false,
-                        errorMessage = result.errorMessage
-                    )
+                        is ResultState.Error -> _state.value = _state.value.copy(
+                            isLoading = false,
+                            errorMessage = result.errorMessage
+                        )
+                    }
                 }
+            } else {
+                observeLatestNews()
             }
-        } else {
-            _state.value = _state.value.copy(
-                isLoading = false,
-                errorMessage = "No internet connection"
-            )
         }
 
-        observeLatestNews()
+
     }
 
-    private fun observeLatestNews() = viewModelScope.launch {
-        getLatestNewsUseCase().collectLatest { newsList ->
-            _state.value = _state.value.copy(newsList = newsList)
+    private fun observeLatestNews() {
+        viewModelScope.launch {
+            try {
+                getLatestNewsUseCase().collectLatest { newsList ->
+                    _state.value = _state.value.copy(
+                        newsList = newsList,
+                        isLoading = false,
+                        errorMessage = null
+                    )
+                }
+            } catch (e: Exception) {
+                _state.value = _state.value.copy(
+                    errorMessage = e.message ?: "An unexpected error occurred",
+                    newsList = emptyList(),
+                    isLoading = false
+                )
+            }
         }
     }
 }

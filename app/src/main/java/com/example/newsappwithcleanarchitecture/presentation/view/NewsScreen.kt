@@ -28,16 +28,14 @@ import com.example.newsappwithcleanarchitecture.ui.theme.LightGrayBackground
 fun NewsScreen() {
     val newsViewModel: NewsViewModel = hiltViewModel()
     val uiState by newsViewModel.state.collectAsStateWithLifecycle()
-    NewsContent(
-        filteredNews = newsViewModel.filteredNews,
-        uiState = uiState,
-        onRefreshClick = {
-            newsViewModel.onIntent(NewsIntent.RefreshNews)
-        },
-        onSearchQueryChange = { query ->
-            newsViewModel.onIntent(NewsIntent.SearchNews(query))
-        }
-    )
+
+        NewsContent(
+            filteredNews = newsViewModel.filteredNews,
+            uiState = uiState,
+            onRefreshClick = { newsViewModel.onIntent(NewsIntent.RefreshNews) },
+            onSearchQueryChange = { query -> newsViewModel.onIntent(NewsIntent.SearchNews(query)) }
+        )
+
 }
 
 @OptIn(ExperimentalGlideComposeApi::class)
@@ -96,6 +94,15 @@ fun NewsContent(
 
             Spacer(modifier = Modifier.height(8.dp))
 
+            Button(
+                onClick = onRefreshClick,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            ) {
+                Text("Refresh News")
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
             when {
                 uiState.isLoading -> {
                     Box(
@@ -106,6 +113,12 @@ fun NewsContent(
                     ) {
                         CircularProgressIndicator()
                     }
+                }
+
+                uiState.errorMessage != null -> {
+                    ErrorScreen(
+                        message =  uiState.errorMessage ?: "Unknown error",
+                    )
                 }
 
                 filteredNews.isNotEmpty() -> {
@@ -141,24 +154,11 @@ fun NewsContent(
                     }
                 }
 
-                uiState.errorMessage != null -> {
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(text = "Error: ${uiState.errorMessage}")
-                    }
-                }
+
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
 
-            Button(
-                onClick = onRefreshClick,
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-            ) {
-                Text("Refresh News")
-            }
+
         }
     }
 }
