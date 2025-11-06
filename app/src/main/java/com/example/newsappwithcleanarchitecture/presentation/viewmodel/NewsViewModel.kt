@@ -61,9 +61,9 @@ class NewsViewModel @Inject constructor(
                 fetchAndCacheNewsUseCase().collect { result ->
                     when (result) {
                         is ResultState.Loading -> _state.value = _state.value.copy(isLoading = true)
-                        is ResultState.Success -> _state.value =
-                            _state.value.copy(isLoading = false)
-
+                        is ResultState.Success -> {
+                             observeLatestNews()
+                        }
                         is ResultState.Error -> _state.value = _state.value.copy(
                             isLoading = false,
                             errorMessage = result.errorMessage
