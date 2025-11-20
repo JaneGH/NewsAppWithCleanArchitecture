@@ -1,9 +1,10 @@
 package com.example.newsappwithcleanarchitecture
 
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.newsappwithcleanarchitecture.domain.model.News
 import com.example.newsappwithcleanarchitecture.presentation.state.NewsUiState
@@ -57,13 +58,41 @@ class LatestNewsUiTest {
         }
 
         composeRule.waitUntil(3_000) {
-            composeRule.onAllNodesWithText("Fake Title 1")
+            composeRule.onAllNodesWithTag("newsItem_1")
                 .fetchSemanticsNodes().isNotEmpty()
         }
 
-        composeRule.onNodeWithText("Fake Title 1").assertExists()
-        composeRule.onNodeWithText("Fake Description 1").assertExists()
-        composeRule.onNodeWithText("Fake Title 2").assertExists()
-        composeRule.onNodeWithText("Fake Description 2").assertExists()
+        composeRule.onNodeWithTag("newsItem_1").assertExists()
+        composeRule.onNodeWithTag("newsItem_2").assertExists()
     }
+
+    @Test
+    fun news_search_isWorked() {
+
+        val currentQuery = mutableStateOf("")
+        val currentFiltered = mutableStateOf(fakeNews)
+
+        composeRule.setContent {
+            NewsContent(
+                filteredNews = currentFiltered.value,
+                uiState = fakeState.copy(searchQuery = currentQuery.value),
+                onRefreshClick = {},
+                onSearchQueryChange = { query ->
+                    currentQuery.value = query
+                    currentFiltered.value = fakeNews.filter {
+                        it.title.contains(query, ignoreCase = true) ||
+                                it.description.contains(query, ignoreCase = true)
+                    }
+                }
+            )
+        }
+
+        composeRule.onNodeWithTag("searchField").performTextInput("1")
+        composeRule.waitUntil(3000) {
+            composeRule.onAllNodesWithTag("newsItem_1").fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithTag("newsItem_1").assertExists()
+        composeRule.onNodeWithTag("newsItem_2").assertDoesNotExist()
+    }
+
 }

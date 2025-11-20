@@ -10,9 +10,7 @@ import com.example.newsappwithcleanarchitecture.presentation.state.NewsIntent
 import com.example.newsappwithcleanarchitecture.presentation.state.NewsUiState
 import com.example.newsappwithcleanarchitecture.util.ResultState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -26,73 +24,93 @@ class NewsViewModel @Inject constructor(
     private val _state = MutableStateFlow(NewsUiState(isLoading = true))
     val state: StateFlow<NewsUiState> = _state
 
-    val filteredNews: List<News>
-        get() = if (_state.value.searchQuery.isBlank()) {
-            _state.value.newsList
-        } else {
-            _state.value.newsList.filter { news ->
-                news.title.contains(_state.value.searchQuery, ignoreCase = true) ||
-                        news.description.contains(_state.value.searchQuery, ignoreCase = true)
-            }
-        }
+    private val _filteredNews = MutableStateFlow<List<News>>(emptyList())
+    val filteredNews: StateFlow<List<News>> = _filteredNews
 
     init {
         loadNews()
     }
 
-    fun onIntent(action: NewsIntent) {
-        when (action) {
+    fun onIntent(intent: NewsIntent) {
+        when (intent) {
             NewsIntent.LoadNews,
             NewsIntent.RefreshNews -> loadNews()
+
             is NewsIntent.SearchNews -> {
-                _state.value = _state.value.copy(searchQuery = action.query)
+                _state.update { it.copy(searchQuery = intent.query) }
+                applySearch(intent.query)
             }
         }
     }
 
     private fun loadNews() = viewModelScope.launch {
-        _state.value = _state.value.copy(isLoading = true, errorMessage = null)
+        _state.update { it.copy(isLoading = true, errorMessage = null) }
 
-        networkMonitor.isConnectedFlow().collectLatest {
-            isConnected ->
+        networkMonitor.isConnectedFlow().take(1).collect { isConnected ->
             if (isConnected) {
-                fetchAndCacheNewsUseCase().collect { result ->
-                    when (result) {
-                        is ResultState.Loading -> _state.value = _state.value.copy(isLoading = true)
-                        is ResultState.Success -> {
-                             observeLatestNews()
-                        }
-                        is ResultState.Error -> _state.value = _state.value.copy(
-                            isLoading = false,
-                            errorMessage = result.errorMessage
-                        )
-                    }
-                }
+                fetchFromRemote()
             } else {
                 observeLatestNews()
             }
         }
+    }
 
+    private suspend fun fetchFromRemote() {
+        fetchAndCacheNewsUseCase().collect { result ->
+            when (result) {
+                is ResultState.Loading ->
+                    _state.update { it.copy(isLoading = true) }
 
+                is ResultState.Success ->
+                    observeLatestNews()
+
+                is ResultState.Error ->
+                    _state.update {
+                        it.copy(isLoading = false, errorMessage = result.errorMessage)
+                    }
+            }
+        }
     }
 
     private fun observeLatestNews() {
         viewModelScope.launch {
             try {
-                getLatestNewsUseCase().collectLatest { newsList ->
-                    _state.value = _state.value.copy(
-                        newsList = newsList,
-                        isLoading = false,
-                        errorMessage = null
-                    )
+                getLatestNewsUseCase().collectLatest { list ->
+                    _state.update {
+                        it.copy(
+                            newsList = list,
+                            isLoading = false,
+                            errorMessage = null
+                        )
+                    }
+                    _filteredNews.value = list
+                    if (_state.value.searchQuery.isNotBlank()) {
+                        applySearch(_state.value.searchQuery)
+                    }
                 }
             } catch (e: Exception) {
-                _state.value = _state.value.copy(
-                    errorMessage = e.message ?: "An unexpected error occurred",
-                    newsList = emptyList(),
-                    isLoading = false
-                )
+                _state.update {
+                    it.copy(
+                        errorMessage = e.message ?: "Unexpected error",
+                        newsList = emptyList(),
+                        isLoading = false
+                    )
+                }
             }
         }
+    }
+
+    private fun applySearch(query: String) {
+        val originalList = _state.value.newsList
+
+        _filteredNews.value =
+            if (query.isBlank()) {
+                originalList
+            } else {
+                originalList.filter { news ->
+                    news.title.contains(query, ignoreCase = true) ||
+                            news.description.contains(query, ignoreCase = true)
+                }
+            }
     }
 }
