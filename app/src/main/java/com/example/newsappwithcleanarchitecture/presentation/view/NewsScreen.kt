@@ -1,5 +1,6 @@
 package com.example.newsappwithcleanarchitecture.presentation.view
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -13,6 +14,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -24,17 +26,21 @@ import com.example.newsappwithcleanarchitecture.presentation.viewmodel.NewsViewM
 import com.example.newsappwithcleanarchitecture.ui.theme.LightGrayBackground
 
 
+@SuppressLint("SuspiciousIndentation")
 @Composable
-fun NewsScreen() {
-    val newsViewModel: NewsViewModel = hiltViewModel()
-    val uiState by newsViewModel.state.collectAsStateWithLifecycle()
+fun NewsScreen(
+    viewModel: NewsViewModel = hiltViewModel()
+) {
+    val uiState by viewModel.state.collectAsStateWithLifecycle()
 
-        NewsContent(
-            filteredNews = newsViewModel.filteredNews,
-            uiState = uiState,
-            onRefreshClick = { newsViewModel.onIntent(NewsIntent.RefreshNews) },
-            onSearchQueryChange = { query -> newsViewModel.onIntent(NewsIntent.SearchNews(query)) }
-        )
+    NewsContent(
+        filteredNews = viewModel.filteredNews,
+        uiState = uiState,
+        onRefreshClick = { viewModel.onIntent(NewsIntent.RefreshNews) },
+        onSearchQueryChange = { query ->
+            viewModel.onIntent(NewsIntent.SearchNews(query))
+        }
+    )
 
 }
 
@@ -88,6 +94,7 @@ fun NewsContent(
                     unfocusedBorderColor = LightGrayBackground,
                 ),
                 modifier = Modifier
+                    .testTag("searchField")
                     .fillMaxWidth()
                     .padding(8.dp)
             )
@@ -97,6 +104,7 @@ fun NewsContent(
             Button(
                 onClick = onRefreshClick,
                 modifier = Modifier.align(Alignment.CenterHorizontally)
+                    .testTag("refreshButton")
             ) {
                 Text("Refresh News")
             }
@@ -122,7 +130,7 @@ fun NewsContent(
                 }
 
                 filteredNews.isNotEmpty() -> {
-                    LazyColumn(modifier = Modifier.fillMaxWidth()) {
+                    LazyColumn(modifier = Modifier.fillMaxWidth().testTag("newsList")) {
                         items(filteredNews) { news ->
                             Card(
                                 modifier = Modifier

@@ -1,3 +1,5 @@
+import org.gradle.kotlin.dsl.androidTestImplementation
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -80,4 +82,22 @@ dependencies {
     kapt("com.google.dagger:hilt-compiler:2.57.2")
     implementation("androidx.hilt:hilt-navigation-compose:1.1.0-alpha01")
     implementation("io.coil-kt:coil-compose:2.4.0")
+
+//    testImplementation("io.mockk:mockk:1.14.6")
+//    androidTestImplementation("io.mockk:mockk:1.14.6")
+//    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
+
+    //for InstantTaskExecutorRule
+    testImplementation("androidx.arch.core:core-testing:2.2.0")
+    androidTestImplementation("androidx.arch.core:core-testing:2.2.0")
+
+    testImplementation("org.slf4j:slf4j-simple:2.0.17")
+
+    // Espresso UI Testing
+//    androidTestImplementation("androidx.test.espresso:espresso-core:3.6.0")
+//    androidTestImplementation("androidx.test.espresso:espresso-contrib:3.6.0")
+//    androidTestImplementation("androidx.test.espresso:espresso-intents:3.6.0")
+//    androidTestImplementation("androidx.test.ext:junit:1.1.6")
+//    androidTestImplementation("androidx.test:runner:1.5.2")
+
 }

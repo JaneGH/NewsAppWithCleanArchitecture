@@ -1,6 +1,5 @@
 package com.example.newsappwithcleanarchitecture.presentation.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.newsappwithcleanarchitecture.domain.model.News
@@ -56,7 +55,6 @@ class NewsViewModel @Inject constructor(
 
         networkMonitor.isConnectedFlow().collectLatest {
             isConnected ->
-            Log.i ("isConnected", "$isConnected")
             if (isConnected) {
                 fetchAndCacheNewsUseCase().collect { result ->
                     when (result) {
