@@ -83,14 +83,9 @@ dependencies {
     implementation("androidx.hilt:hilt-navigation-compose:1.1.0-alpha01")
     implementation("io.coil-kt:coil-compose:2.4.0")
 
-//    testImplementation("io.mockk:mockk:1.14.6")
-//    androidTestImplementation("io.mockk:mockk:1.14.6")
-//    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
-
     //for InstantTaskExecutorRule
     testImplementation("androidx.arch.core:core-testing:2.2.0")
     androidTestImplementation("androidx.arch.core:core-testing:2.2.0")
-
     testImplementation("org.slf4j:slf4j-simple:2.0.17")
 
     // Espresso UI Testing
@@ -100,4 +95,10 @@ dependencies {
 //    androidTestImplementation("androidx.test.ext:junit:1.1.6")
 //    androidTestImplementation("androidx.test:runner:1.5.2")
 
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
+    testImplementation("io.mockk:mockk:1.13.11")
+    testImplementation("com.google.dagger:hilt-android-testing:2.51.1")
+    kaptTest("com.google.dagger:hilt-compiler:2.51.1")
+    testImplementation("androidx.arch.core:core-testing:2.2.0")
+    testImplementation("junit:junit:4.13.2")
 }
