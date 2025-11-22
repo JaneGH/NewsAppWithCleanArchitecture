@@ -14,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -24,6 +25,7 @@ import com.example.newsappwithcleanarchitecture.presentation.state.NewsIntent
 import com.example.newsappwithcleanarchitecture.presentation.state.NewsUiState
 import com.example.newsappwithcleanarchitecture.presentation.viewmodel.NewsViewModel
 import com.example.newsappwithcleanarchitecture.ui.theme.LightGrayBackground
+import com.example.newsappwithcleanarchitecture.R
 
 @SuppressLint("SuspiciousIndentation")
 @Composable
@@ -63,7 +65,7 @@ fun NewsContent(
         ) {
 
             Text(
-                text = "Latest News",
+                text = stringResource(id = R.string.latest_news),
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier
